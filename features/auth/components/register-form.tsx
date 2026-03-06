@@ -12,7 +12,10 @@ import {
   CardTitle,
 } from "../../../components/ui/card";
 
+import Image from "next/image";
+import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import {
   Field,
   FieldError,
@@ -20,18 +23,20 @@ import {
   FieldLabel,
 } from "../../../components/ui/field";
 import { Input } from "../../../components/ui/input";
-import Link from "next/link";
 import { authClient } from "../../../lib/auth-client";
-import { toast } from "sonner";
 
-const registerSchema = z.object({
-  email: z.email("Please enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters long"),
-  confirmPassword: z.string().min(6, "Confirm Password must be at least 6 characters long"),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
+const registerSchema = z
+  .object({
+    email: z.email("Please enter a valid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters long"),
+    confirmPassword: z
+      .string()
+      .min(6, "Confirm Password must be at least 6 characters long"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
@@ -53,17 +58,19 @@ export function RegisterForm() {
         name: values.email,
         email: values.email,
         password: values.password,
-        callbackURL: "/"
+        callbackURL: "/",
       },
       {
         onSuccess: () => {
           router.push("/");
         },
         onError: (ctx) => {
-          toast.error(ctx.error.message || "An error occurred during registration")
-        }
-      }
-    )
+          toast.error(
+            ctx.error.message || "An error occurred during registration",
+          );
+        },
+      },
+    );
   };
 
   const isPending = form.formState.isSubmitting;
@@ -85,6 +92,12 @@ export function RegisterForm() {
                   type="button"
                   disabled={isPending}
                 >
+                  <Image
+                    src="/logos/github.svg"
+                    width={25}
+                    height={25}
+                    alt="Github"
+                  />
                   Continue with Github
                 </Button>
                 <Button
@@ -93,6 +106,12 @@ export function RegisterForm() {
                   type="button"
                   disabled={isPending}
                 >
+                  <Image
+                    src="/logos/google.svg"
+                    width={20}
+                    height={20}
+                    alt="Google"
+                  />
                   Continue with Google
                 </Button>
               </div>
@@ -164,7 +183,10 @@ export function RegisterForm() {
               Create Account
             </Button>
             <div className="text-center">
-              Already have an account? <Link className="underline" href="/login">Login</Link>
+              Already have an account?{" "}
+              <Link className="underline" href="/login">
+                Login
+              </Link>
             </div>
           </Field>
         </CardFooter>
