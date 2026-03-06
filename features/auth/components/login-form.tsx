@@ -12,7 +12,10 @@ import {
   CardTitle,
 } from "../../../components/ui/card";
 
+import Image from "next/image";
+import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import {
   Field,
   FieldError,
@@ -20,9 +23,7 @@ import {
   FieldLabel,
 } from "../../../components/ui/field";
 import { Input } from "../../../components/ui/input";
-import Link from "next/link";
 import { authClient } from "../../../lib/auth-client";
-import { toast } from "sonner";
 
 const loginSchema = z.object({
   email: z.email("Please enter a valid email address"),
@@ -43,18 +44,23 @@ export function LoginForm() {
   });
 
   const onsubmit = async (values: LoginFormValues) => {
-    await authClient.signIn.email({
-      email: values.email,
-      password: values.password,
-      callbackURL: "/"
-    }, {
-      onSuccess: () => {
-        router.push("/");
+    await authClient.signIn.email(
+      {
+        email: values.email,
+        password: values.password,
+        callbackURL: "/",
       },
-      onError: (ctx) => {
-        toast.error(ctx.error.message || "An error occurred while logging in");
-      }
-    })
+      {
+        onSuccess: () => {
+          router.push("/");
+        },
+        onError: (ctx) => {
+          toast.error(
+            ctx.error.message || "An error occurred while logging in",
+          );
+        },
+      },
+    );
   };
 
   const isPending = form.formState.isSubmitting;
@@ -76,6 +82,12 @@ export function LoginForm() {
                   type="button"
                   disabled={isPending}
                 >
+                  <Image
+                    src="/logos/github.svg"
+                    width={25}
+                    height={25}
+                    alt="Github"
+                  />
                   Continue with Github
                 </Button>
                 <Button
@@ -84,6 +96,12 @@ export function LoginForm() {
                   type="button"
                   disabled={isPending}
                 >
+                  <Image
+                    src="/logos/google.svg"
+                    width={20}
+                    height={20}
+                    alt="Google"
+                  />
                   Continue with Google
                 </Button>
               </div>
@@ -138,7 +156,10 @@ export function LoginForm() {
               Login
             </Button>
             <div className="text-center">
-              Don&#39;t have an account? <Link className="underline" href="/signup">Sign up</Link>
+              Don&#39;t have an account?{" "}
+              <Link className="underline" href="/signup">
+                Sign up
+              </Link>
             </div>
           </Field>
         </CardFooter>
