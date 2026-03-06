@@ -116,6 +116,7 @@ export function LoginForm() {
                         <FieldLabel>Password</FieldLabel>
                         <Input
                           type="password"
+                          disabled={isPending}
                           aria-invalid={fieldState.invalid}
                           placeholder="Enter your password"
                           {...field}
