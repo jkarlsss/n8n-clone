@@ -5,7 +5,7 @@ import Link from "next/link";
 type EntityHeaderProps = {
   title: string;
   description?: string;
-  newButtonnLabel?: string;
+  newButtonLabel?: string;
   disabled?: boolean;
   isCreating?: boolean;
 } & (
@@ -17,7 +17,7 @@ type EntityHeaderProps = {
 export const EntityHeader = ({
   title,
   description,
-  newButtonnLabel,
+  newButtonLabel,
   disabled,
   isCreating,
   onNew,
@@ -36,13 +36,13 @@ export const EntityHeader = ({
       {onNew && !newButtonHref && (
         <Button disabled={disabled || isCreating} size="sm" onClick={onNew}>
           <PlusIcon className="size-4" />
-          {newButtonnLabel}
+          {newButtonLabel}
         </Button>
       )}
       {newButtonHref && !onNew && (
         <Link href={newButtonHref} prefetch>
           <PlusIcon className="size-4" />
-          {newButtonnLabel}
+          {newButtonLabel}
         </Link>
       )}
     </div>

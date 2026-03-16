@@ -42,7 +42,7 @@ export const WorkflowsHeader = ({ disabled }: { disabled?: boolean }) => {
       <EntityHeader
         title="Workflows"
         description="Create and manage workflows"
-        newButtonnLabel="New Workflow"
+        newButtonLabel="New Workflow"
         disabled={disabled}
         isCreating={createWorkflow.isPending}
         onNew={handleCreate}

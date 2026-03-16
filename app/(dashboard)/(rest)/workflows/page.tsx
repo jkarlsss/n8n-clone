@@ -1,5 +1,5 @@
 import { requireAuth } from "@/lib/auth-utils"
-import { prefetchWorkflows } from "@/features/workflows/server/prefect";
+import { prefetchWorkflows } from "@/features/workflows/server/prefetch";
 import { HydrateClient } from "@/trpc/server";
 import { ErrorBoundary } from "react-error-boundary";
 import { Suspense } from "react";
