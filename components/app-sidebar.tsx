@@ -24,6 +24,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "./ui/sidebar";
+import { toast } from "sonner";
 
 export default function AppSidebar() {
   const router = useRouter();
@@ -136,6 +137,10 @@ export default function AppSidebar() {
                 authClient.signOut({
                   fetchOptions: {
                     onSuccess: () => router.push("/login"),
+                    onError: (error) => {
+                        toast.error(`Failed to sign out: ${error}`);
+                        // Consider showing a toast notification to the user
+                      },
                   },
                 })
               }
