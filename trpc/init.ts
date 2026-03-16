@@ -2,6 +2,7 @@ import { initTRPC, TRPCError } from '@trpc/server';
 import { cache } from 'react';
 import { auth } from '../lib/auth';
 import { headers } from 'next/headers';
+import { polarClient } from '../lib/polar';
 export const createTRPCContext = cache(async () => {
   /**
    * @see: https://trpc.io/docs/server/context
@@ -42,3 +43,39 @@ export const protectedProcedure = baseProcedure.use(async ({ ctx, next }) => {
   });
 
 });
+export const premiumProcedure = protectedProcedure.use(
+  async ({ ctx, next }) => {
+
+    let customer;
+    try {
+      customer = await polarClient.customers.getStateExternal({
+       externalId: ctx.auth.user.id
+     });
+   } catch (error) {
+     throw new TRPCError({
+       code: 'INTERNAL_SERVER_ERROR',
+       message: 'Failed to verify subscription status',
+       cause: error,
+     });
+   }
+
+    if (
+      !customer.activeSubscriptions ||
+      customer.activeSubscriptions.length === 0
+    ) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You must have an active subscription to access this resource',
+      });
+    }
+
+    return next(
+      {
+        ctx: {
+          ...ctx,
+          customer,
+        },
+      }
+    )
+  }
+)

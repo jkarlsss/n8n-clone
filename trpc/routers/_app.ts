@@ -1,9 +1,10 @@
 import prisma from "@/lib/prisma";
-import { inngest } from "../../inngest/client";
-import { createTRPCRouter, protectedProcedure } from "../init";
+import { inngest } from "@/inngest/client";
+import { createTRPCRouter, premiumProcedure, protectedProcedure } from "../init";
+import { authClient } from "@/lib/auth-client";
 
 export const appRouter = createTRPCRouter({
-  testAi: protectedProcedure.mutation(async ({ ctx }) => {
+  testAi: premiumProcedure.mutation(async ({ ctx }) => {
     
     await inngest.send({
       name: "execute/ai",
@@ -24,6 +25,11 @@ export const appRouter = createTRPCRouter({
 
     return { success: true, message: "Workflow creation triggered" };
   }),
+  getCustomerState: protectedProcedure.query(async ({ ctx }) => {
+    const { data: customerState } = await authClient.customer.state();
+
+    return { customerState, message: "Customer state retrieved successfully" };
+  })
 });
 // export type definition of API
 export type AppRouter = typeof appRouter;
