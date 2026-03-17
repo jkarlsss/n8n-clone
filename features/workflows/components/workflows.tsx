@@ -71,7 +71,7 @@ export const WorkflowsPagination = () => {
 
   return (
     <EntityPagination 
-      disabled={workflows.isPending}
+      disabled={workflows.isFetching}
       page={params.page}
       totalPages={workflows.data.totalPages}
       onPageChange={(page) => setParams({ ...params, page })}
