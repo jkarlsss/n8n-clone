@@ -163,8 +163,13 @@ export const WorkflowItem = ({ data }: { data: Workflow }) => {
   const { mutateAsync: removeWorkflow, isPending } = useRemoveWorkflow();
 
   const handleRemove = async () => {
-    await removeWorkflow({ id: data.id });
-    router.push("/workflows");
+    try {
+     await removeWorkflow({ id: data.id });
+      router.push("/workflows");
+    } catch (error) {
+      // Consider using a toast notification or error state
+      console.error("Failed to remove workflow:", error);
+    }
   };
 
   return (
