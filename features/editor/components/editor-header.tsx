@@ -46,6 +46,7 @@ export const EditorNameInput = ({ workflowId }: { workflowId: string }) => {
   }, [isEditing]);
 
   const handleSave = async () => {
+    if (updateWorkflow.isPending) return;
     if (name === workflow.name) {
       setIsEditing(false);
       return;
@@ -84,9 +85,18 @@ export const EditorNameInput = ({ workflowId }: { workflowId: string }) => {
   }
 
   return (
-    <BreadcrumbItem onClick={() => setIsEditing(true)} className="cursor-pointer hover:text-foreground transition-colors">
-      {workflow.name}
-    </BreadcrumbItem>
+       <BreadcrumbItem>
+        <Button
+          type="button"
+          disabled={updateWorkflow.isPending}
+          size="sm"
+          variant="link"
+          onClick={() => setIsEditing(true)}
+          className="cursor-pointer hover:text-foreground transition-colors bg-transparent border-none p-0 font-inherit"
+        >
+          {workflow.name}
+        </Button>
+      </BreadcrumbItem>
   );
 };
 
