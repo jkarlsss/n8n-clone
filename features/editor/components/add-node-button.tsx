@@ -11,6 +11,7 @@ export const AddNodeButton = memo(() => {
       size={"icon"}
       variant={"outline"}
       className="bg-background"
+      aria-label="Add node"
     >
       <PlusIcon className="size-4" />
     </Button>
