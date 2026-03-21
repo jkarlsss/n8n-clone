@@ -14,6 +14,7 @@ import {
 import { useEntitySearch } from "@/hooks/use-entity-search";
 import { useUpgradeModal } from "@/hooks/use-upgrade-modal";
 import { Workflow } from "@/lib/generated/prisma/browser";
+import { formatDistanceToNow } from "date-fns";
 import { WorkflowIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -164,7 +165,7 @@ export const WorkflowItem = ({ data }: { data: Workflow }) => {
 
   const handleRemove = async () => {
     try {
-     await removeWorkflow({ id: data.id });
+      await removeWorkflow({ id: data.id });
       router.push("/workflows");
     } catch (error) {
       // Consider using a toast notification or error state
@@ -176,7 +177,15 @@ export const WorkflowItem = ({ data }: { data: Workflow }) => {
     <EntityItem
       title={data.name}
       href={`/workflows/${data.id}`}
-      subtitle={<>Update TODO &bull; Created TODO</>}
+      subtitle={
+        <>
+          Created{" "}
+          {formatDistanceToNow(new Date(data.createdAt), { addSuffix: true })}
+          {" • "}
+          Updated{" "}
+          {formatDistanceToNow(new Date(data.updatedAt), { addSuffix: true })}
+        </>
+      }
       image={
         <div className="size-8 flex items-center justify-center">
           <WorkflowIcon className="size-5 text-muted-foreground" />
