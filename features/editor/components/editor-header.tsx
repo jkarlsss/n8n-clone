@@ -19,11 +19,11 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { useAtomValue } from "jotai";
-import { editoAtom } from "../store/atoms";
+import { editorAtom } from "../store/atoms";
 
 export const EditorSaveButton = ({ workflowId }: { workflowId: string }) => {
   
-  const editor = useAtomValue(editoAtom);
+  const editor = useAtomValue(editorAtom);
   const saveWorkflow = useUpdateWorkflow();
 
   const handleSave = () => {

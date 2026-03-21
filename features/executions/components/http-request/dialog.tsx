@@ -78,6 +78,14 @@ export const HttpRequestDialog = ({
   
 
   const watchMethod = form.watch("method");
+
+  
+  useEffect(() => {
+    if (watchMethod === "GET") {
+      form.setValue("body", "");
+    }
+  }, [watchMethod, form]);
+  
   const showBodyField = ["POST", "PUT", "DELETE", "PATCH"].includes(
     watchMethod,
   );

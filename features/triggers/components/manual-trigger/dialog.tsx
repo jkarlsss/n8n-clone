@@ -28,7 +28,7 @@ export const ManualTriggerDialog = ({
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          <p className="text-sm text-mute-foreground">
+          <p className="text-sm text-muted-foreground">
             Used to manually trigger a workflow, no config required
           </p>
         </div>
