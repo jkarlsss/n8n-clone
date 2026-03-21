@@ -12,11 +12,11 @@ type HttpRequestNodeData = {
   [key: string]: unknown;
 };
 
-type HttpRquestNodeType = Node<HttpRequestNodeData>;
+type HttpRequestNodeType = Node<HttpRequestNodeData>;
 
-export const HttpRequestNode = memo((props: NodeProps<HttpRquestNodeType>) => {
+export const HttpRequestNode = memo((props: NodeProps<HttpRequestNodeType>) => {
   const nodeData = props.data as HttpRequestNodeData;
-  const desription = nodeData?.endpoint
+  const description = nodeData?.endpoint
     ? `${nodeData.method || "GET"}: ${nodeData.endpoint}`
     : "No endpoint";
 
@@ -27,7 +27,7 @@ export const HttpRequestNode = memo((props: NodeProps<HttpRquestNodeType>) => {
         id={props.id}
         icon={GlobeIcon}
         name="HTTP Request"
-        description={desription}
+        description={description}
         onSettings={() => {}}
         onDoubleClick={() => {}}
       />
