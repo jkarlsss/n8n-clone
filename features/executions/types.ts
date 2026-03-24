@@ -12,4 +12,6 @@ export interface NodeExecutorParams<Tdata = Record<string, unknown>> {
   // publish
 }
 
-export type NodeExecutor<Tdata = Record<string, unknown>> = (params: NodeExecutorParams<Tdata>) => Promise<{ data?: unknown } | void | Response | unknown>;
+export type NodeExecutor<Tdata = Record<string, unknown>> = (
+  params: NodeExecutorParams<Tdata>,
+) => Promise<{ data?: unknown } | void | Response>;
