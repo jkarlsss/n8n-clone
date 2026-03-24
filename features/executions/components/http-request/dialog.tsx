@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dispatch, SetStateAction, useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import z from "zod";
 import {
   Field,
@@ -31,6 +31,10 @@ import { InputGroup, InputGroupTextarea } from "../../../../components/ui/input-
 import { Button } from "../../../../components/ui/button";
 
 const formSchema = z.object({
+  variableName: z
+  .string()
+  .min(1, { message: "Please enter a variable name" })
+  .regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, { message: "Variable must start with a letter or underscore and can only contain letters, numbers, and underscores" }),
   endpoint: z.url({ message: "Please enter a valid URL" }),
   method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH"]),
   body: z.string().optional(),
@@ -55,6 +59,7 @@ export const HttpRequestDialog = ({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      variableName: defaultValues.variableName ?? "",
       endpoint: defaultValues.endpoint ?? "",
       method: defaultValues.method ?? "GET",
       body: defaultValues.body ?? "",
@@ -64,16 +69,22 @@ export const HttpRequestDialog = ({
   useEffect(() => {
     if (open) {
       form.reset({
+        variableName: defaultValues.variableName ?? "",
         endpoint: defaultValues.endpoint ?? "",
         method: defaultValues.method ?? "GET",
         body: defaultValues.body ?? "",
       });
     }
-  }, [open, form, defaultValues.body, defaultValues.endpoint, defaultValues.method]);
+  }, [open, form, defaultValues.body, defaultValues.endpoint, defaultValues.method, defaultValues.variableName]);
   
-
-  const watchMethod = form.watch("method");
-
+  const watchVariableName = useWatch({
+    control: form.control,
+    name: "variableName",
+  })
+  const watchMethod = useWatch({
+    control: form.control,
+    name: "method",
+  });
   
   useEffect(() => {
     if (watchMethod === "GET") {
@@ -101,6 +112,31 @@ export const HttpRequestDialog = ({
         </DialogHeader>
         <form id="form-rhf-http" onSubmit={form.handleSubmit(handleFormSubmit)}>
           <FieldGroup>
+            <Controller
+              name="variableName"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="form-rhf-input-endpoint">
+                    Variable Name
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id="form-rhf-input-varname"
+                    aria-invalid={fieldState.invalid}
+                    placeholder="Enter variable name"
+                    autoComplete="off"
+                  />
+                  <FieldDescription>
+                    Use this name to reference the request in your workflow.
+                    {"{{$" + (watchVariableName || "apiExample") + ".httpResponse.data}}"}
+                  </FieldDescription>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
             <Controller
               name="method"
               control={form.control}
