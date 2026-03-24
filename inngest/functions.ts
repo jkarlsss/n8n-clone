@@ -1,51 +1,53 @@
-import { generateText } from "ai";
-import prisma from "../lib/prisma";
+import { NonRetriableError } from "inngest";
 import { inngest } from "./client";
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { createOpenAI } from '@ai-sdk/openai';
-import { createAnthropic } from '@ai-sdk/anthropic';
+import prisma from "../lib/prisma";
+import { topologicalSort } from "./utils";
+import { NodeType } from "../lib/generated/prisma/enums";
+import { getExecutor } from "../features/executions/lib/executor-registry";
 
-const google = createGoogleGenerativeAI({
-  // custom settings
-});
-const openai = createOpenAI({
-  // custom settings, e.g.
-  headers: {
-    'header-name': 'header-value',
-  },
-});
-const anthropic = createAnthropic({
-  // custom settings
-});
-
-
-export const execute = inngest.createFunction(
-  { id: "execute-id", retries: 2 },
-  { event: "execute/ai" },
+export const executeWorkflow = inngest.createFunction(
+  { id: "execute-workflow", retries: 2 },
+  { event: "workflow/execute.workflow" },
   async ({ event, step }) => {
-    
-    const { steps: geminiSteps } = await step.ai.wrap("gemini-generate-text", 
-      generateText, {
-      model: google("gemini-3-flash-preview"),
-      system: "You are a helpful assistant.",
-      prompt: "what is 3 + 3?",
-    });
-    
-    const { steps: openaiSteps } = await step.ai.wrap("openai-generate-text", 
-      generateText, {
-      model: openai("gpt-3.5-turbo"),
-      system: "You are a helpful assistant.",
-      prompt: "what is 3 + 3?",
-    });
 
-    const { steps: anthropicSteps } = await step.ai.wrap("anthropic-generate-text", 
-      generateText, {
-      model: anthropic("claude-3-5-sonnet"),
-      system: "You are a helpful assistant.",
-      prompt: "what is 3 + 3?",
-    });
+    const workflowId = event.data.workflowId;
 
-    return { gemini: geminiSteps, openai: openaiSteps, anthropic: anthropicSteps };
-   
+    if (!workflowId) {
+      throw new NonRetriableError("Missing workflow Id");
+    }
+
+    const sortedNodes = await step.run("prepare-workflow", async () => {
+      const workflow = await prisma.workflow.findUniqueOrThrow({
+        where: {
+          id: workflowId,
+        },
+        include: {
+          nodes: true,
+          connections: true,
+        }
+      })
+
+      return topologicalSort(workflow.nodes, workflow.connections);
+    })
+
+    // initialize the context with any initial data
+    let context = event.data.context || {};
+
+    // execute each node
+    for (const node of sortedNodes) {
+      const executor = getExecutor(node.type as NodeType);
+
+      context = await executor({
+        data: node.data as Record<string, unknown>,
+        nodeId: node.id,
+        context,
+        step
+      })
+    }
+
+    return { 
+      workflowId,
+      result: context
+     };
   },
 );

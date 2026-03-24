@@ -95,6 +95,9 @@ export const useSuspenseWorkflow = (id: string) => {
   return useSuspenseQuery(trpc.workflows.getOne.queryOptions({ id }));
 };
 
+/**
+ * Hook to update a workflow
+ */
 export const useUpdateWorkflow = () => {
   const queryClient = useQueryClient();
   const trpc = useTRPC();
@@ -110,6 +113,25 @@ export const useUpdateWorkflow = () => {
       },
       onError: ({ message }) => {
         toast.error(`Failed to save workflow: ${message}`);
+      },
+    }),
+  );
+};
+
+/**
+ * Hook to execute a workflow
+ */
+export const useExecuteWorkflow = () => {
+  const trpc = useTRPC();
+
+  return useMutation(
+    trpc.workflows.execute.mutationOptions({
+      onSuccess: (data) => {
+        toast.success(`Workflow ${data.name} executed`);
+        
+      },
+      onError: ({ message }) => {
+        toast.error(`Failed to execute workflow: ${message}`);
       },
     }),
   );
