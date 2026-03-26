@@ -1,15 +1,21 @@
 import { NonRetriableError } from "inngest";
-import { inngest } from "./client";
-import prisma from "../lib/prisma";
-import { topologicalSort } from "./utils";
-import { NodeType } from "../lib/generated/prisma/enums";
 import { getExecutor } from "../features/executions/lib/executor-registry";
+import prisma from "../lib/prisma";
+import { httpRequestChannel } from "./channels/http-request";
+import { manualTriggerChannel } from "./channels/manual-trigger";
+import { inngest } from "./client";
+import { topologicalSort } from "./utils";
 
 export const executeWorkflow = inngest.createFunction(
-  { id: "execute-workflow", retries: 2 },
-  { event: "workflow/execute.workflow" },
-  async ({ event, step }) => {
-
+  {
+    id: "execute-workflow",
+    retries: process.env.NODE_ENV === "production" ? 2 : 0,
+  },
+  {
+    event: "workflow/execute.workflow",
+    channels: [httpRequestChannel(), manualTriggerChannel()],
+  },
+  async ({ event, step, publish }) => {
     const workflowId = event.data.workflowId;
 
     if (!workflowId) {
@@ -24,11 +30,11 @@ export const executeWorkflow = inngest.createFunction(
         include: {
           nodes: true,
           connections: true,
-        }
-      })
+        },
+      });
 
       return topologicalSort(workflow.nodes, workflow.connections);
-    })
+    });
 
     // initialize the context with any initial data
     let context = event.data.context || {};
@@ -41,13 +47,14 @@ export const executeWorkflow = inngest.createFunction(
         data: node.data as Record<string, unknown>,
         nodeId: node.id,
         context,
-        step
-      })
+        step,
+        publish,
+      });
     }
 
-    return { 
+    return {
       workflowId,
-      result: context
-     };
+      result: context,
+    };
   },
 );
