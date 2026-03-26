@@ -1,22 +1,21 @@
 import { NonRetriableError } from "inngest";
-import { inngest } from "./client";
-import prisma from "../lib/prisma";
-import { topologicalSort } from "./utils";
 import { getExecutor } from "../features/executions/lib/executor-registry";
+import prisma from "../lib/prisma";
 import { httpRequestChannel } from "./channels/http-request";
 import { manualTriggerChannel } from "./channels/manual-trigger";
+import { inngest } from "./client";
+import { topologicalSort } from "./utils";
 
 export const executeWorkflow = inngest.createFunction(
-  { id: "execute-workflow", retries: 0 // TODO REMOVE IN PRODUCTION
-     },
-  { event: "workflow/execute.workflow",
-    channels: [
-      httpRequestChannel(),
-      manualTriggerChannel(),
-    ],
-   },
+  {
+    id: "execute-workflow",
+    retries: process.env.NODE_ENV === "production" ? 2 : 0,
+  },
+  {
+    event: "workflow/execute.workflow",
+    channels: [httpRequestChannel(), manualTriggerChannel()],
+  },
   async ({ event, step, publish }) => {
-
     const workflowId = event.data.workflowId;
 
     if (!workflowId) {
@@ -31,11 +30,11 @@ export const executeWorkflow = inngest.createFunction(
         include: {
           nodes: true,
           connections: true,
-        }
-      })
+        },
+      });
 
       return topologicalSort(workflow.nodes, workflow.connections);
-    })
+    });
 
     // initialize the context with any initial data
     let context = event.data.context || {};
@@ -49,13 +48,13 @@ export const executeWorkflow = inngest.createFunction(
         nodeId: node.id,
         context,
         step,
-        publish
-      })
+        publish,
+      });
     }
 
-    return { 
+    return {
       workflowId,
-      result: context
-     };
+      result: context,
+    };
   },
 );

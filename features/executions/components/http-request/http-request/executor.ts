@@ -1,5 +1,5 @@
-import Handlebars from "handlebars";
 import { NodeExecutor } from "@/features/executions/types";
+import Handlebars from "handlebars";
 import { NonRetriableError } from "inngest";
 import ky, { type Options as KyOptions } from "ky";
 import { httpRequestChannel } from "../../../../../inngest/channels/http-request";
@@ -38,29 +38,16 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
   )
 
   if (!data?.endpoint) {
-    await publish(httpRequestChannel().status({
-      nodeId,
-      status: "error"
-    }))
     throw new NonRetriableError("Endpoint not configured.");
   }
 
   if (!data?.variableName) {
-    await publish(httpRequestChannel().status({
-      nodeId,
-      status: "error"
-    }))
     throw new NonRetriableError("Variable name not configured.");
   }
 
   if (!data?.method) {
-    await publish(httpRequestChannel().status({
-      nodeId,
-      status: "error"
-    }))
     throw new NonRetriableError("Method not configured.");
   }
-
   const result = await step.run("http-request", async () => {
     const endPoint = Handlebars.compile(data.endpoint)(context);
     const method = data.method;
@@ -88,10 +75,6 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
       }
     }
 
-    await publish(httpRequestChannel().status({
-      nodeId,
-      status: "success"
-    }))
 
     return {
       ...context,
@@ -100,6 +83,10 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
   });
 
   // TODO publish result
+  await publish(httpRequestChannel().status({
+    nodeId,
+    status: "success"
+  }))
 
   return result;
   
