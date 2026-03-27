@@ -13,9 +13,9 @@ Handlebars.registerHelper("json", (context) => {
 });
 
 type HttpRequestData = {
-  variableName: string;
-  endpoint: string;
-  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+  variableName?: string;
+  endpoint?: string;
+  method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   body?: string;
 };
 
@@ -56,7 +56,7 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
       method,
     };
 
-    if(["POST", "PUT", "PATCH"].includes(method)) {
+    if(["POST", "PUT", "PATCH"].includes(method!)) {
       const resolved = Handlebars.compile(data.body || "{}")(context);
       JSON.parse(resolved);
       options.body = resolved;
@@ -78,7 +78,7 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
 
     return {
       ...context,
-      [data.variableName]: responsePayload
+      [data.variableName!]: responsePayload
     };
   });
 

@@ -1,6 +1,7 @@
 import { NonRetriableError } from "inngest";
 import { getExecutor } from "../features/executions/lib/executor-registry";
 import prisma from "../lib/prisma";
+import { googleFormTriggerChannel } from "./channels/google-form-trigger";
 import { httpRequestChannel } from "./channels/http-request";
 import { manualTriggerChannel } from "./channels/manual-trigger";
 import { inngest } from "./client";
@@ -9,11 +10,15 @@ import { topologicalSort } from "./utils";
 export const executeWorkflow = inngest.createFunction(
   {
     id: "execute-workflow",
-    retries: process.env.NODE_ENV === "production" ? 2 : 0,
+    retries: 0,
   },
   {
     event: "workflow/execute.workflow",
-    channels: [httpRequestChannel(), manualTriggerChannel()],
+    channels: [
+      httpRequestChannel(),
+      manualTriggerChannel(),
+      googleFormTriggerChannel(),
+    ],
   },
   async ({ event, step, publish }) => {
     const workflowId = event.data.workflowId;
@@ -37,7 +42,7 @@ export const executeWorkflow = inngest.createFunction(
     });
 
     // initialize the context with any initial data
-    let context = event.data.context || {};
+    let context = event.data.initialData || {};
 
     // execute each node
     for (const node of sortedNodes) {
