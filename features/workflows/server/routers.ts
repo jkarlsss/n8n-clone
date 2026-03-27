@@ -8,8 +8,9 @@ import {
 import { type Node } from "@xyflow/react";
 import { generateSlug } from "random-word-slugs";
 import z from "zod";
-import { NodeType } from "../../../lib/generated/prisma/enums";
-import { inngest } from '../../../inngest/client';
+import { NodeType } from "@/lib/generated/prisma/enums";
+import { sendWorkflowExecution } from "@/inngest/utils";
+import { inngest } from "@/inngest/client";
 
 export const workflowsRouter = createTRPCRouter({
   execute: protectedProcedure
@@ -21,6 +22,8 @@ export const workflowsRouter = createTRPCRouter({
           userId: ctx.auth.user.id,
         },
       });
+
+      // await sendWorkflowExecution({ workflowId: workflow.id });
 
       await inngest.send({
         name: "workflow/execute.workflow",
