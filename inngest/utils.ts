@@ -55,7 +55,7 @@ export const sendWorkflowExecution = async (data: {
   [key: string]: unknown;
 }) => {
   return inngest.send({
-    name: "workflow/execution.workflow",
+    name: "workflow/execute.workflow",
     data,
   });
-}
+};

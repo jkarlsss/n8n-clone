@@ -46,8 +46,8 @@ export const GoogleFormTriggerDialog = ({ open, onOpenChange }: Props) => {
           <DialogTitle>Google Form Trigger Configuration</DialogTitle>
           <DialogDescription>
             Use this webhook URL in your Google Form&apos;s Apps Script to
-            trigger This workflow when a form is submitted
-          </DialogDescription>
+            trigger this workflow when a form is submitted
+          </DialogDescription>{" "}
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
@@ -82,17 +82,22 @@ export const GoogleFormTriggerDialog = ({ open, onOpenChange }: Props) => {
               <li>Choose: From form - On form submit - Save</li>
             </ol>
           </div>
-          <div className="rouded-lg bg-muted p-4 space-y-3">
+          <div className="rounded-lg bg-muted p-4 space-y-3">
+            {" "}
             <h4 className="font-medium text-sm">Google Apps Script:</h4>
-            <Button type="button" variant={"outline"} onClick={async () => {
-              const script = generateGoogleFormScript(webhookUrl);
-              try {
-                await navigator.clipboard.writeText(script);
-                toast.success("Script copied to clipboard");
-              } catch {
-                toast.error("Failed to copy script to clipboard");
-              }
-            }}>
+            <Button
+              type="button"
+              variant={"outline"}
+              onClick={async () => {
+                const script = generateGoogleFormScript(webhookUrl);
+                try {
+                  await navigator.clipboard.writeText(script);
+                  toast.success("Script copied to clipboard");
+                } catch {
+                  toast.error("Failed to copy script to clipboard");
+                }
+              }}
+            >
               <CopyIcon className="size-4" />
               Copy Google Apps Script
             </Button>
@@ -101,9 +106,7 @@ export const GoogleFormTriggerDialog = ({ open, onOpenChange }: Props) => {
             </p>
           </div>
           <div className="rounded-lg bg-muted p-4 space-y-2">
-            <h4 className="font-medium text-sm">
-              Available Variables
-            </h4>
+            <h4 className="font-medium text-sm">Available Variables</h4>
             <ul className="text-sm text-muted-foreground space-y-1">
               <li>
                 <code className="bg-background px-1 py-0.5 rounded">

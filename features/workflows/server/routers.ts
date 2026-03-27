@@ -10,7 +10,6 @@ import { generateSlug } from "random-word-slugs";
 import z from "zod";
 import { NodeType } from "@/lib/generated/prisma/enums";
 import { sendWorkflowExecution } from "@/inngest/utils";
-import { inngest } from "@/inngest/client";
 
 export const workflowsRouter = createTRPCRouter({
   execute: protectedProcedure
@@ -23,14 +22,7 @@ export const workflowsRouter = createTRPCRouter({
         },
       });
 
-      // await sendWorkflowExecution({ workflowId: workflow.id });
-
-      await inngest.send({
-        name: "workflow/execute.workflow",
-        data: {
-          workflowId: workflow.id
-        }
-      });
+      await sendWorkflowExecution({ workflowId: workflow.id });
       
       return workflow;
 

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendWorkflowExecution } from "@/inngest/utils";
-import { inngest } from "../../../../inngest/client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,21 +30,11 @@ export async function POST(request: NextRequest) {
 
     // Trigger inngest job
     
-    // await sendWorkflowExecution({ workflowId,
-    //   initialData: {
-    //     googleForm: formData
-    //   }
-    //  });
-
-     await inngest.send({
-        name: "workflow/execute.workflow",
-        data: {
-          workflowId: workflowId,
-          initialData: {
+    await sendWorkflowExecution({ workflowId,
+      initialData: {
         googleForm: formData
       }
-        }
-      });
+     });
 
     return NextResponse.json(
       {
