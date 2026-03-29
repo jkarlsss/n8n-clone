@@ -1,5 +1,5 @@
 import { NodeExecutor } from "@/features/executions/types";
-import { googleFormTriggerChannel } from '@/inngest/channels/google-form-trigger';
+import { googleFormTriggerChannel } from "@/inngest/channels/google-form-trigger copy";
 
 type GoogleFormTriggerData = Record<string, unknown>;
 
@@ -8,23 +8,23 @@ export const googleFormTriggerExecutor: NodeExecutor<GoogleFormTriggerData> = as
   context,
   step,
   nodeId,
-  publish
+  publish,
 }) => {
   await publish(
     googleFormTriggerChannel().status({
       nodeId,
-      status: "loading"
-    })
-  )
+      status: "loading",
+    }),
+  );
 
   const result = await step.run("GoogleForm-trigger", async () => context);
 
   await publish(
     googleFormTriggerChannel().status({
       nodeId,
-      status: "success"
-    })
-  )
+      status: "success",
+    }),
+  );
 
   return result;
 };

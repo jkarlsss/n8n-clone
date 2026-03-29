@@ -37,18 +37,20 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
     })
   )
 
-  if (!data?.endpoint) {
-    throw new NonRetriableError("Endpoint not configured.");
-  }
-
-  if (!data?.variableName) {
-    throw new NonRetriableError("Variable name not configured.");
-  }
-
-  if (!data?.method) {
-    throw new NonRetriableError("Method not configured.");
-  }
   const result = await step.run("http-request", async () => {
+    
+    if (!data?.endpoint) {
+      throw new NonRetriableError("Endpoint not configured.");
+    }
+
+    if (!data?.variableName) {
+      throw new NonRetriableError("Variable name not configured.");
+    }
+
+    if (!data?.method) {
+      throw new NonRetriableError("Method not configured.");
+    }
+
     const endPoint = Handlebars.compile(data.endpoint)(context);
     const method = data.method;
 
@@ -56,7 +58,7 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
       method,
     };
 
-    if(["POST", "PUT", "PATCH"].includes(method!)) {
+    if(["POST", "PUT", "PATCH"].includes(method)) {
       const resolved = Handlebars.compile(data.body || "{}")(context);
       JSON.parse(resolved);
       options.body = resolved;
@@ -78,7 +80,7 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
 
     return {
       ...context,
-      [data.variableName!]: responsePayload
+      [data.variableName]: responsePayload
     };
   });
 
