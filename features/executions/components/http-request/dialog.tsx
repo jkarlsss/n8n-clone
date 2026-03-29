@@ -18,17 +18,17 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "../../../../components/ui/field";
-import { Input } from "../../../../components/ui/input";
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../../components/ui/select";
-import { InputGroup, InputGroupTextarea } from "../../../../components/ui/input-group";
-import { Button } from "../../../../components/ui/button";
+} from "@/components/ui/select";
+import { InputGroup, InputGroupTextarea } from "@/components/ui/input-group";
+import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
   variableName: z
