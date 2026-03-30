@@ -55,6 +55,24 @@ const executionNodes: NodeTypeOption[] = [
     description: "Makes a HTTP request.",
     icon: GlobeIcon,
   },
+  {
+    type: NodeType.GEMINI,
+    label: "Gemini",
+    description: "Interacts with the Gemini API.",
+    icon: "/logos/gemini.svg",
+  },
+  {
+    type: NodeType.OPENAI,
+    label: "OpenAI",
+    description: "Interacts with the OpenAI API.",
+    icon: "/logos/openai.svg",
+  },
+  {
+    type: NodeType.ANTHROPIC,
+    label: "Anthropic",
+    description: "Interacts with the Anthropic API.",
+    icon: "/logos/anthropic.svg",
+  },
 ];
 
 interface NodeSelectorProps {
@@ -134,10 +152,7 @@ export function NodeSelector({
             const Icon = nodeType.icon;
 
             return (
-              <div
-                  key={nodeType.type}
-
-              >
+              <div key={nodeType.type}>
                 <div
                   className="w-full justify-start h-auto py-5 px-4
                 rounded-none cursor-pointer border-l-2
@@ -172,30 +187,34 @@ export function NodeSelector({
             const Icon = nodeType.icon;
 
             return (
-              <div
-                key={nodeType.type}
-                className="w-full justify-start h-auto py-5 px-4
+              <div key={nodeType.type}>
+                <div
+                  className="w-full justify-start h-auto py-5 px-4
                 rounded-none cursor-pointer border-l-2
                 hover:border-l-primary border-transparent"
-                onClick={() => handleNodeSelect(nodeType)}
-              >
-                <div className="flex items-center gap-6 w-full overflow-hidden">
-                  {typeof Icon === "string" ? (
-                    <Image
-                      src={Icon}
-                      alt={nodeType.label}
-                      className="size-5 object-contain rounded-sm"
-                    />
-                  ) : (
-                    <Icon className="size-5" />
-                  )}
-                  <div className="flex flex-col items-start text-left">
-                    <span className="font-medium text-sm">
-                      {nodeType.label}
-                    </span>
-                    <span className="text-sm">{nodeType.description}</span>
+                  onClick={() => handleNodeSelect(nodeType)}
+                >
+                  <div className="flex items-center gap-6 w-full overflow-hidden">
+                    {typeof Icon === "string" ? (
+                      <Image
+                        src={Icon}
+                        alt={nodeType.label}
+                        width={0}
+                        height={0}
+                        className="size-5 object-contain rounded-sm"
+                      />
+                    ) : (
+                      <Icon className="size-5" />
+                    )}
+                    <div className="flex flex-col items-start text-left">
+                      <span className="font-medium text-sm">
+                        {nodeType.label}
+                      </span>
+                      <span className="text-sm">{nodeType.description}</span>
+                    </div>
                   </div>
                 </div>
+                <Separator />
               </div>
             );
           })}
