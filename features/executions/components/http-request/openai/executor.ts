@@ -1,13 +1,13 @@
 import { NodeExecutor } from "@/features/executions/types";
+import { createOpenAI } from "@ai-sdk/openai";
+import { generateText } from "ai";
 import Handlebars from "handlebars";
 import { NonRetriableError } from "inngest";
-import { AI_AVAILABLE_MODELS } from "./dialog";
-import { createOpenAI } from '@ai-sdk/openai';
-import { generateText } from 'ai';
 import { openaiChannel } from "../../../../../inngest/channels/openai";
+import { AI_AVAILABLE_MODELS } from "./dialog";
 
 Handlebars.registerHelper("json", (context) => {
-  const jsonString = JSON.stringify(context, null, 2)
+  const jsonString = JSON.stringify(context, null, 2);
 
   const safeString = new Handlebars.SafeString(jsonString);
 
@@ -26,19 +26,18 @@ export const openaiExecutor: NodeExecutor<OpenAiData> = async ({
   context,
   step,
   nodeId,
-  publish
+  publish,
 }) => {
-  // TODO publish loading state for 
-    
+  // TODO publish loading state for
+
   await publish(
     openaiChannel().status({
       nodeId,
-      status: "loading"
-    })
-  )
+      status: "loading",
+    }),
+  );
 
   try {
-
     if (!data.variableName) {
       throw new NonRetriableError("Variable name is required.");
     }
@@ -46,14 +45,15 @@ export const openaiExecutor: NodeExecutor<OpenAiData> = async ({
     if (!data.userPrompt) {
       throw new NonRetriableError("User prompt is required.");
     }
-    
-    const systemPrompt = data.systemPrompt  ? Handlebars.compile(data.systemPrompt)(context)
+
+    const systemPrompt = data.systemPrompt
+      ? Handlebars.compile(data.systemPrompt)(context)
       : "You are a helpful assistant that tries to help the user with their request. Always try to be as helpful as possible.";
-    
+
     const userPrompt = Handlebars.compile(data.userPrompt)(context);
-  
+
     // TODO: fetch user credentials
-    const credentialValue = process.env.OPENAI_API_KEY; 
+    const credentialValue = process.env.OPENAI_API_KEY;
 
     if (!credentialValue) {
       throw new NonRetriableError("API key not configured.");
@@ -64,7 +64,6 @@ export const openaiExecutor: NodeExecutor<OpenAiData> = async ({
       apiKey: credentialValue,
     });
 
-    
     const { steps } = await step.ai.wrap("openai-generate-text", generateText, {
       model: openai(data.model || AI_AVAILABLE_MODELS[0]),
       system: systemPrompt,
@@ -73,33 +72,31 @@ export const openaiExecutor: NodeExecutor<OpenAiData> = async ({
         isEnabled: true,
         recordInputs: true,
         recordOutputs: true,
-      }
-    })
+      },
+    });
 
-    const text = steps[0].content[0].type === "text" ? steps[0].content[0].text : "";
-
+    const firstContent = steps?.[0]?.content?.[0];
+    const text = firstContent?.type === "text" ? firstContent.text : "";
     await publish(
       openaiChannel().status({
         nodeId,
-        status: "success"
-      })
-    )
+        status: "success",
+      }),
+    );
 
     return {
       ...context,
       [data.variableName]: {
         aiResponse: text,
       },
-    }
-
-  } catch(error) {
+    };
+  } catch (error) {
     await publish(
       openaiChannel().status({
         nodeId,
-        status: "error"
-      })
-    )
+        status: "error",
+      }),
+    );
     throw error;
   }
-
 };

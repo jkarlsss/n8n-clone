@@ -17,7 +17,12 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { InputGroup, InputGroupAddon, InputGroupText, InputGroupTextarea } from "@/components/ui/input-group";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupText,
+  InputGroupTextarea,
+} from "@/components/ui/input-group";
 import {
   Select,
   SelectContent,
@@ -47,7 +52,7 @@ const formSchema = z.object({
     }),
   model: z.enum(AI_AVAILABLE_MODELS),
   systemPrompt: z.string().optional(),
-  userPrompt: z.string().min(1, { message: "Please enter a user prompt" }),
+  userPrompt: z.string().min(1000, { message: "Please enter a user prompt" }),
 });
 
 export type AnthropicFormValues = z.infer<typeof formSchema>;
@@ -122,7 +127,7 @@ export const AnthropicDialog = ({
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-input-endpoint">
+                  <FieldLabel htmlFor="form-rhf-input-varname">
                     Variable Name
                   </FieldLabel>
                   <Input
@@ -134,9 +139,7 @@ export const AnthropicDialog = ({
                   />
                   <FieldDescription>
                     Use this name to reference the request in your workflow.
-                    {"{{" +
-                      (watchVariableName || "apiExample") +
-                      ".text}}"}
+                    {"{{" + (watchVariableName || "apiExample") + ".text}}"}
                   </FieldDescription>
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -149,9 +152,7 @@ export const AnthropicDialog = ({
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-select-model">
-                    Model
-                  </FieldLabel>
+                  <FieldLabel htmlFor="form-rhf-select-model">Model</FieldLabel>
                   <Select
                     name={field.name}
                     value={field.value}
@@ -165,7 +166,9 @@ export const AnthropicDialog = ({
                     </SelectTrigger>
                     <SelectContent position="item-aligned">
                       {AI_AVAILABLE_MODELS.map((model) => (
-                        <SelectItem key={model} value={model}>{model}</SelectItem>
+                        <SelectItem key={model} value={model}>
+                          {model}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -235,17 +238,22 @@ export const AnthropicDialog = ({
                   </InputGroup>
                   <FieldDescription>
                     The main prompt that will be sent to the AI model. You can
-                  </FieldDescription>
+                    use variables like {"{{variableName.field}}"} to reference
+                    data from other nodes.
+                  </FieldDescription>{" "}
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
                 </Field>
               )}
             />
-
           </FieldGroup>
           <DialogFooter>
-            <Button className="w-full mt-6" disabled={form.formState.isSubmitting} type="submit">
+            <Button
+              className="w-full mt-6"
+              disabled={form.formState.isSubmitting}
+              type="submit"
+            >
               Save changes
             </Button>
           </DialogFooter>

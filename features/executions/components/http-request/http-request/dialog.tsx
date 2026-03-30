@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,10 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Dispatch, SetStateAction, useEffect } from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
-import z from "zod";
 import {
   Field,
   FieldDescription,
@@ -20,6 +17,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupTextarea } from "@/components/ui/input-group";
 import {
   Select,
   SelectContent,
@@ -27,27 +25,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { InputGroup, InputGroupTextarea } from "@/components/ui/input-group";
-import { Button } from "@/components/ui/button";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Dispatch, SetStateAction, useEffect } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import z from "zod";
 
 const formSchema = z.object({
   variableName: z
-  .string()
-  .min(1, { message: "Please enter a variable name" })
-  .regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, { message: "Variable must start with a letter or underscore and can only contain letters, numbers, and underscores" }),
+    .string()
+    .min(1, { message: "Please enter a variable name" })
+    .regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, {
+      message:
+        "Variable must start with a letter or underscore and can only contain letters, numbers, and underscores",
+    }),
   endpoint: z.string().min(1, { message: "Please enter a valid URL" }),
   method: z.enum(["GET", "POST", "PUT", "DELETE", "PATCH"]),
   body: z.string().optional(),
   // .refine(),
 });
 
-export type HttpRequesFormValues = z.infer<typeof formSchema>;
-
+export type HttpRequestFormValues = z.infer<typeof formSchema>;
 interface Props {
   open: boolean;
   onOpenChange: Dispatch<SetStateAction<boolean>>;
   onSubmit: (values: z.infer<typeof formSchema>) => void;
-  defaultValues?: Partial<HttpRequesFormValues>;
+  defaultValues?: Partial<HttpRequestFormValues>;
 }
 
 export const HttpRequestDialog = ({
@@ -75,23 +77,30 @@ export const HttpRequestDialog = ({
         body: defaultValues.body ?? "",
       });
     }
-  }, [open, form, defaultValues.body, defaultValues.endpoint, defaultValues.method, defaultValues.variableName]);
-  
+  }, [
+    open,
+    form,
+    defaultValues.body,
+    defaultValues.endpoint,
+    defaultValues.method,
+    defaultValues.variableName,
+  ]);
+
   const watchVariableName = useWatch({
     control: form.control,
     name: "variableName",
-  })
+  });
   const watchMethod = useWatch({
     control: form.control,
     name: "method",
   });
-  
+
   useEffect(() => {
     if (watchMethod === "GET") {
       form.setValue("body", "");
     }
   }, [watchMethod, form]);
-  
+
   const showBodyField = ["POST", "PUT", "DELETE", "PATCH"].includes(
     watchMethod,
   );
@@ -117,7 +126,7 @@ export const HttpRequestDialog = ({
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-input-endpoint">
+                  <FieldLabel htmlFor="form-rhf-input-varname">
                     Variable Name
                   </FieldLabel>
                   <Input
@@ -129,7 +138,9 @@ export const HttpRequestDialog = ({
                   />
                   <FieldDescription>
                     Use this name to reference the request in your workflow.
-                    {"{{$" + (watchVariableName || "apiExample") + ".httpResponse.data}}"}
+                    {"{{$" +
+                      (watchVariableName || "apiExample") +
+                      ".httpResponse.data}}"}
                   </FieldDescription>
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -198,39 +209,44 @@ export const HttpRequestDialog = ({
                 </Field>
               )}
             />
-            
-          {showBodyField && (
-            <Controller
-              name="body"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-body">
-                    Body
-                  </FieldLabel>
-                  <InputGroup>
-                    <InputGroupTextarea
-                      {...field}
-                      id="form-rhf-body"
-                      placeholder='{ "name": "John Doe" }'
-                      rows={6}
-                      className="min-h-24 resize-none"
-                      aria-invalid={fieldState.invalid}
-                    />
-                  </InputGroup>
-                  <FieldDescription>
-                    JSON with template variables. Use {"{{json variable}}"} for stringified JSON.
-                  </FieldDescription>
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-          )}
+
+            {showBodyField && (
+              <Controller
+                name="body"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-rhf-body">Body</FieldLabel>
+                    <InputGroup>
+                      <InputGroupTextarea
+                        {...field}
+                        id="form-rhf-body"
+                        placeholder='{ "name": "John Doe" }'
+                        rows={6}
+                        className="min-h-24 resize-none"
+                        aria-invalid={fieldState.invalid}
+                      />
+                    </InputGroup>
+                    <FieldDescription>
+                      JSON with template variables. Use {"{{json variable}}"}{" "}
+                      for stringified JSON.
+                    </FieldDescription>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            )}
           </FieldGroup>
           <DialogFooter>
-            <Button className="w-full mt-6" disabled={form.formState.isSubmitting} type="submit">Save changes</Button>
+            <Button
+              className="w-full mt-6"
+              disabled={form.formState.isSubmitting}
+              type="submit"
+            >
+              Save changes
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

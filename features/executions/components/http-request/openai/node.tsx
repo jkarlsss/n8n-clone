@@ -5,9 +5,9 @@ import { Node, NodeProps, useReactFlow } from "@xyflow/react";
 import { memo, useState } from "react";
 import { useNodeStatus } from "../../../hooks/use-node-status";
 
-import { AI_AVAILABLE_MODELS, OpenAiDialog, OpenAiFormValues } from "./dialog";
-import { fetchOpenaiRealtimeToken } from "./actions";
 import { OPENAI_CHANNEL_NAME } from "@/inngest/channels/openai";
+import { fetchOpenaiRealtimeToken } from "./actions";
+import { AI_AVAILABLE_MODELS, OpenAiDialog, OpenAiFormValues } from "./dialog";
 
 type OpenAiNodeData = {
   variableName?: string;
@@ -55,9 +55,8 @@ export const OpenAiNode = memo((props: NodeProps<OpenAiNodeType>) => {
     ? `${nodeData.model || AI_AVAILABLE_MODELS[0]}: ${nodeData.userPrompt.slice(
         0,
         50,
-      )}...`
-    : "No model";
-
+      )}${nodeData.userPrompt.length > 50 ? "..." : ""}`
+    : "No prompt configured";
   return (
     <>
       <OpenAiDialog

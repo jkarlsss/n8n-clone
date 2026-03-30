@@ -28,7 +28,6 @@ export const anthropicExecutor: NodeExecutor<AnthropicData> = async ({
   nodeId,
   publish
 }) => {
-  // TODO publish loading state for 
     
   await publish(
     anthropicChannel().status({
