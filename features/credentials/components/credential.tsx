@@ -205,6 +205,7 @@ export const CredentialForm = ({ initialData }: CredentialItemProps) => {
                       {...field}
                       id="form-rhf-value"
                       aria-invalid={fieldState.invalid}
+                      type="password"
                       placeholder="Enter the credential value"
                       autoComplete="off"
                     />
