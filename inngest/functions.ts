@@ -10,6 +10,8 @@ import { geminiChannel } from "./channels/gemini";
 import { stripeTriggerChannel } from "./channels/stripe-trigger";
 import { openaiChannel } from "./channels/openai";
 import { anthropicChannel } from "./channels/anthropic";
+import { slackChannel } from "./channels/slack";
+import { discordChannel } from "./channels/discord";
 
 export const executeWorkflow = inngest.createFunction(
   {
@@ -26,6 +28,8 @@ export const executeWorkflow = inngest.createFunction(
       geminiChannel(),
       anthropicChannel(),
       openaiChannel(),
+      slackChannel(),
+      discordChannel()
     ],
   },
   async ({ event, step, publish }) => {
@@ -49,8 +53,21 @@ export const executeWorkflow = inngest.createFunction(
       return topologicalSort(workflow.nodes, workflow.connections);
     });
 
+    const userId = await step.run("get-user-id", async () => {
+      const workflow = await prisma.workflow.findUniqueOrThrow({
+        where: {
+          id: workflowId,
+        },
+        select: {
+          userId: true,
+        },
+      });
+      return workflow.userId;
+    });
+
     // initialize the context with any initial data
     let context = event.data.initialData || {};
+
 
     // execute each node
     for (const node of sortedNodes) {
@@ -60,6 +77,7 @@ export const executeWorkflow = inngest.createFunction(
         data: node.data as Record<string, unknown>,
         nodeId: node.id,
         context,
+        userId,
         step,
         publish,
       });

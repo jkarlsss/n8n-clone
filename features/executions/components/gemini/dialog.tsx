@@ -31,12 +31,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
 import { Dispatch, SetStateAction, useEffect } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import z from "zod";
-import { useCredentialsByType } from "../../../../credentials/hooks/use-credentials";
-import { CredentialType } from "../../../../../lib/generated/prisma/browser";
-import Image from "next/image";
+import { CredentialType } from "../../../../lib/generated/prisma/browser";
+import { useCredentialsByType } from "../../../credentials/hooks/use-credentials";
 
 export const AI_AVAILABLE_MODELS = [
   "gemini-3-flash-preview",
@@ -52,10 +52,16 @@ const formSchema = z.object({
       message:
         "Variable must start with a letter or underscore and can only contain letters, numbers, and underscores",
     }),
-  credentialId: z.string().min(1, { message: "Please select a credential" }).optional(),
+  credentialId: z
+    .string()
+    .min(1, { message: "Please select a credential" })
+    .optional(),
   model: z.enum(AI_AVAILABLE_MODELS),
   systemPrompt: z.string().optional(),
-  userPrompt: z.string().min(1, { message: "Please enter a user prompt" }).max(1000, { message: "User prompt is too long" }),
+  userPrompt: z
+    .string()
+    .min(1, { message: "Please enter a user prompt" })
+    .max(1000, { message: "User prompt is too long" }),
 });
 
 export type GeminiFormValues = z.infer<typeof formSchema>;
@@ -73,7 +79,10 @@ export const GeminiDialog = ({
   onSubmit,
   defaultValues = {},
 }: Props) => {
-  const { data: credentials, isLoading: credentialsLoading } = useCredentialsByType(CredentialType.GEMINI);
+  const {
+    data: credentials,
+    isLoading: credentialsLoading,
+  } = useCredentialsByType(CredentialType.GEMINI);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -160,12 +169,18 @@ export const GeminiDialog = ({
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-select-credential">Gemini Credential</FieldLabel>
+                  <FieldLabel htmlFor="form-rhf-select-credential">
+                    Gemini Credential
+                  </FieldLabel>
                   <Select
                     name={field.name}
                     value={field.value}
                     onValueChange={field.onChange}
-                    disabled={credentialsLoading || !credentials || credentials.length === 0}
+                    disabled={
+                      credentialsLoading ||
+                      !credentials ||
+                      credentials.length === 0
+                    }
                   >
                     <SelectTrigger
                       id="form-rhf-select-credential"
@@ -177,7 +192,12 @@ export const GeminiDialog = ({
                       {credentials?.map((credential) => (
                         <SelectItem key={credential.id} value={credential.id}>
                           <div className="flex items-center gap-2">
-                            <Image src={"/logos/gemini.svg"} alt={credential.name} width={16} height={16} />
+                            <Image
+                              src={"/logos/gemini.svg"}
+                              alt={credential.name}
+                              width={16}
+                              height={16}
+                            />
                             {credential.name}
                           </div>
                         </SelectItem>

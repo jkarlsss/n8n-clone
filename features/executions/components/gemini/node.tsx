@@ -1,43 +1,39 @@
 "use client";
 
-import { BaseExecutionNode } from "@/features/executions/components/http-request/base-execution-node";
+import { GEMINI_CHANNEL_NAME } from "@/inngest/channels/gemini";
 import { Node, NodeProps, useReactFlow } from "@xyflow/react";
 import { memo, useState } from "react";
-import { useNodeStatus } from "../../../hooks/use-node-status";
+import { useNodeStatus } from "../../hooks/use-node-status";
 
-import { ANTHROPIC_CHANNEL_NAME } from "../../../../../inngest/channels/anthropic";
-import { fetchAnthropicRealtimeToken } from "./actions";
-import {
-  AI_AVAILABLE_MODELS,
-  AnthropicDialog,
-  AnthropicFormValues,
-} from "./dialog";
+import { fetchGeminiRealtimeToken } from "./actions";
+import { AI_AVAILABLE_MODELS, GeminiDialog, GeminiFormValues } from "./dialog";
+import { BaseExecutionNode } from "../base-execution-node";
 
-type AnthropicNodeData = {
+type GeminiNodeData = {
   variableName?: string;
   model?: typeof AI_AVAILABLE_MODELS[number];
   systemPrompt?: string;
   userPrompt?: string;
 };
 
-type AnthropicNodeType = Node<AnthropicNodeData>;
+type GeminiNodeType = Node<GeminiNodeData>;
 
-export const AnthropicNode = memo((props: NodeProps<AnthropicNodeType>) => {
+export const GeminiNode = memo((props: NodeProps<GeminiNodeType>) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const { setNodes } = useReactFlow();
 
   const nodeStatus = useNodeStatus({
     nodeId: props.id,
-    channel: ANTHROPIC_CHANNEL_NAME,
+    channel: GEMINI_CHANNEL_NAME,
     topic: "status",
-    refreshToken: fetchAnthropicRealtimeToken,
+    refreshToken: fetchGeminiRealtimeToken,
   });
 
   const handleOpenSetting = () => {
     setDialogOpen(true);
   };
 
-  const handleSubmit = (values: AnthropicFormValues) => {
+  const handleSubmit = (values: GeminiFormValues) => {
     setNodes((nodes) =>
       nodes.map((node) => {
         if (node.id === props.id) {
@@ -56,15 +52,15 @@ export const AnthropicNode = memo((props: NodeProps<AnthropicNodeType>) => {
 
   const nodeData = props.data;
   const description = nodeData?.userPrompt
-    ? `${nodeData.model || AI_AVAILABLE_MODELS[0]}: ${
-        nodeData.userPrompt.length > 50
-          ? `${nodeData.userPrompt.slice(0, 50)}...`
-          : nodeData.userPrompt
-      }`
-    : nodeData?.model || "Not configured";
+    ? `${nodeData.model || AI_AVAILABLE_MODELS[0]}: ${nodeData.userPrompt.slice(
+        0,
+        50,
+      )}...`
+    : "No model";
+
   return (
     <>
-      <AnthropicDialog
+      <GeminiDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         onSubmit={handleSubmit}
@@ -73,8 +69,8 @@ export const AnthropicNode = memo((props: NodeProps<AnthropicNodeType>) => {
       <BaseExecutionNode
         {...props}
         id={props.id}
-        icon="/logos/anthropic.svg"
-        name="Anthropic"
+        icon="/logos/gemini.svg"
+        name="Gemini"
         description={description}
         status={nodeStatus}
         onSettings={handleOpenSetting}
@@ -84,4 +80,4 @@ export const AnthropicNode = memo((props: NodeProps<AnthropicNodeType>) => {
   );
 });
 
-AnthropicNode.displayName = "AnthropicNode";
+GeminiNode.displayName = "GeminiNode";
