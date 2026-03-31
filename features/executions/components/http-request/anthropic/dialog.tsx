@@ -34,6 +34,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Dispatch, SetStateAction, useEffect } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import z from "zod";
+import { CredentialType } from "../../../../../lib/generated/prisma/enums";
+import { useCredentialsByType } from "../../../../credentials/hooks/use-credentials";
+import Image from "next/image";
 
 export const AI_AVAILABLE_MODELS = [
   "claude-instant-1",
@@ -50,9 +53,13 @@ const formSchema = z.object({
       message:
         "Variable must start with a letter or underscore and can only contain letters, numbers, and underscores",
     }),
+  credentialId: z.string().min(1, { message: "Please select a credential" }),
   model: z.enum(AI_AVAILABLE_MODELS),
   systemPrompt: z.string().optional(),
-  userPrompt: z.string().min(1000, { message: "Please enter a user prompt" }),
+  userPrompt: z
+    .string()
+    .min(1, { message: "Please enter a user prompt" })
+    .max(1000, { message: "User prompt is too long" }),
 });
 
 export type AnthropicFormValues = z.infer<typeof formSchema>;
@@ -70,10 +77,15 @@ export const AnthropicDialog = ({
   onSubmit,
   defaultValues = {},
 }: Props) => {
+  const {
+    data: credentials,
+    isLoading: credentialsLoading,
+  } = useCredentialsByType(CredentialType.ANTHROPIC);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       variableName: defaultValues.variableName ?? "",
+      credentialId: defaultValues.credentialId ?? credentials?.[0]?.id ?? "",
       model: defaultValues.model ?? AI_AVAILABLE_MODELS[0],
       systemPrompt: defaultValues.systemPrompt ?? "",
       userPrompt: defaultValues.userPrompt ?? "",
@@ -84,6 +96,7 @@ export const AnthropicDialog = ({
     if (open) {
       form.reset({
         variableName: defaultValues.variableName ?? "",
+        credentialId: defaultValues.credentialId ?? credentials?.[0]?.id ?? "",
         model: defaultValues.model ?? AI_AVAILABLE_MODELS[0],
         systemPrompt: defaultValues.systemPrompt ?? "",
         userPrompt: defaultValues.userPrompt ?? "",
@@ -96,6 +109,8 @@ export const AnthropicDialog = ({
     defaultValues.variableName,
     defaultValues.userPrompt,
     defaultValues.systemPrompt,
+    defaultValues.credentialId,
+    credentials,
   ]);
 
   const watchVariableName = useWatch({
@@ -110,7 +125,7 @@ export const AnthropicDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Anthropic Configuration</DialogTitle>
           <DialogDescription>
@@ -140,6 +155,55 @@ export const AnthropicDialog = ({
                   <FieldDescription>
                     Use this name to reference the request in your workflow.
                     {"{{" + (watchVariableName || "apiExample") + ".text}}"}
+                  </FieldDescription>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+            <Controller
+              name="credentialId"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="form-rhf-select-credential">
+                    Anthropic Credential
+                  </FieldLabel>
+                  <Select
+                    name={field.name}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    disabled={
+                      credentialsLoading ||
+                      !credentials ||
+                      credentials.length === 0
+                    }
+                  >
+                    <SelectTrigger
+                      id="form-rhf-select-credential"
+                      aria-invalid={fieldState.invalid}
+                    >
+                      <SelectValue placeholder="Select credential" />
+                    </SelectTrigger>
+                    <SelectContent position="item-aligned">
+                      {credentials?.map((credential) => (
+                        <SelectItem key={credential.id} value={credential.id}>
+                          <div className="flex items-center gap-2">
+                            <Image
+                              src={"/logos/anthropic.svg"}
+                              alt={credential.name}
+                              width={16}
+                              height={16}
+                            />
+                            {credential.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FieldDescription>
+                    Select the AI model to use for this request.
                   </FieldDescription>
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
