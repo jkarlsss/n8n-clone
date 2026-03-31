@@ -31,12 +31,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
 import { Dispatch, SetStateAction, useEffect } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import z from "zod";
-import { CredentialType } from "../../../../../lib/generated/prisma/enums";
-import { useCredentialsByType } from "../../../../credentials/hooks/use-credentials";
-import Image from "next/image";
+import { CredentialType } from "../../../../lib/generated/prisma/enums";
+import { useCredentialsByType } from "../../../credentials/hooks/use-credentials";
 
 export const AI_AVAILABLE_MODELS = [
   "claude-instant-1",

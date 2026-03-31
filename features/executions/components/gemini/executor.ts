@@ -1,11 +1,11 @@
 import { NodeExecutor } from "@/features/executions/types";
-import { createOpenAI } from "@ai-sdk/openai";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
 import Handlebars from "handlebars";
 import { NonRetriableError } from "inngest";
-import { openaiChannel } from "../../../../../inngest/channels/openai";
+import { geminiChannel } from "../../../../inngest/channels/gemini";
+import prisma from "../../../../lib/prisma";
 import { AI_AVAILABLE_MODELS } from "./dialog";
-import prisma from "../../../../../lib/prisma";
 
 Handlebars.registerHelper("json", (context) => {
   const jsonString = JSON.stringify(context, null, 2);
@@ -15,7 +15,7 @@ Handlebars.registerHelper("json", (context) => {
   return safeString;
 });
 
-type OpenAiData = {
+type GeminiData = {
   variableName?: string;
   credentialId?: string;
   model?: typeof AI_AVAILABLE_MODELS[number];
@@ -23,17 +23,18 @@ type OpenAiData = {
   userPrompt?: string;
 };
 
-export const openaiExecutor: NodeExecutor<OpenAiData> = async ({
+export const geminiExecutor: NodeExecutor<GeminiData> = async ({
   data,
   context,
   step,
+  userId,
   nodeId,
   publish,
 }) => {
   // TODO publish loading state for
 
   await publish(
-    openaiChannel().status({
+    geminiChannel().status({
       nodeId,
       status: "loading",
     }),
@@ -66,6 +67,7 @@ export const openaiExecutor: NodeExecutor<OpenAiData> = async ({
       return prisma.credential.findUnique({
         where: {
           id: data.credentialId,
+          userId,
         },
       });
     });
@@ -80,13 +82,13 @@ export const openaiExecutor: NodeExecutor<OpenAiData> = async ({
       throw new NonRetriableError("API key not configured.");
     }
 
-    const openai = createOpenAI({
+    const google = createGoogleGenerativeAI({
       // custom settings
       apiKey: credentialValue,
     });
 
-    const { steps } = await step.ai.wrap("openai-generate-text", generateText, {
-      model: openai(data.model || AI_AVAILABLE_MODELS[0]),
+    const { steps } = await step.ai.wrap("gemini-generate-text", generateText, {
+      model: google(data.model || AI_AVAILABLE_MODELS[0]),
       system: systemPrompt,
       prompt: userPrompt,
       experimental_telemetry: {
@@ -96,10 +98,11 @@ export const openaiExecutor: NodeExecutor<OpenAiData> = async ({
       },
     });
 
-    const firstContent = steps?.[0]?.content?.[0];
-    const text = firstContent?.type === "text" ? firstContent.text : "";
+    const text =
+      steps[0].content[0].type === "text" ? steps[0].content[0].text : "";
+
     await publish(
-      openaiChannel().status({
+      geminiChannel().status({
         nodeId,
         status: "success",
       }),
@@ -113,7 +116,7 @@ export const openaiExecutor: NodeExecutor<OpenAiData> = async ({
     };
   } catch (error) {
     await publish(
-      openaiChannel().status({
+      geminiChannel().status({
         nodeId,
         status: "error",
       }),

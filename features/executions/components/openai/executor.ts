@@ -1,21 +1,21 @@
 import { NodeExecutor } from "@/features/executions/types";
+import { createOpenAI } from "@ai-sdk/openai";
+import { generateText } from "ai";
 import Handlebars from "handlebars";
 import { NonRetriableError } from "inngest";
+import { openaiChannel } from "../../../../inngest/channels/openai";
+import prisma from "../../../../lib/prisma";
 import { AI_AVAILABLE_MODELS } from "./dialog";
-import { generateText } from 'ai';
-import { anthropicChannel } from "../../../../../inngest/channels/anthropic";
-import { createAnthropic } from '@ai-sdk/anthropic';
-import prisma from "../../../../../lib/prisma";
 
 Handlebars.registerHelper("json", (context) => {
-  const jsonString = JSON.stringify(context, null, 2)
+  const jsonString = JSON.stringify(context, null, 2);
 
   const safeString = new Handlebars.SafeString(jsonString);
 
   return safeString;
 });
 
-type AnthropicData = {
+type OpenAiData = {
   variableName?: string;
   credentialId?: string;
   model?: typeof AI_AVAILABLE_MODELS[number];
@@ -23,23 +23,24 @@ type AnthropicData = {
   userPrompt?: string;
 };
 
-export const anthropicExecutor: NodeExecutor<AnthropicData> = async ({
+export const openaiExecutor: NodeExecutor<OpenAiData> = async ({
   data,
   context,
   step,
   nodeId,
-  publish
+  userId,
+  publish,
 }) => {
-    
+  // TODO publish loading state for
+
   await publish(
-    anthropicChannel().status({
+    openaiChannel().status({
       nodeId,
-      status: "loading"
-    })
-  )
+      status: "loading",
+    }),
+  );
 
   try {
-
     if (!data.variableName) {
       throw new NonRetriableError("Variable name is required.");
     }
@@ -55,71 +56,70 @@ export const anthropicExecutor: NodeExecutor<AnthropicData> = async ({
     if (!data.model) {
       throw new NonRetriableError("Model is required.");
     }
-    
-    const systemPrompt = data.systemPrompt  ? Handlebars.compile(data.systemPrompt)(context)
+
+    const systemPrompt = data.systemPrompt
+      ? Handlebars.compile(data.systemPrompt)(context)
       : "You are a helpful assistant that tries to help the user with their request. Always try to be as helpful as possible.";
-    
+
     const userPrompt = Handlebars.compile(data.userPrompt)(context);
-  
+
     const credential = await step.run("get-credential", () => {
       return prisma.credential.findUnique({
         where: {
           id: data.credentialId,
+          userId,
         },
       });
-    })
+    });
 
     if (!credential) {
       throw new NonRetriableError("API key not configured.");
     }
 
-    const credentialValue = credential?.value; 
-    
+    const credentialValue = credential?.value;
+
     if (!credentialValue) {
       throw new NonRetriableError("API key not configured.");
     }
 
-    const anthropic = createAnthropic({
+    const openai = createOpenAI({
       // custom settings
       apiKey: credentialValue,
     });
 
-    
-    const { steps } = await step.ai.wrap("anthropic-generate-text", generateText, {
-      model: anthropic(data.model || AI_AVAILABLE_MODELS[0]),
+    const { steps } = await step.ai.wrap("openai-generate-text", generateText, {
+      model: openai(data.model || AI_AVAILABLE_MODELS[0]),
       system: systemPrompt,
       prompt: userPrompt,
       experimental_telemetry: {
         isEnabled: true,
         recordInputs: true,
         recordOutputs: true,
-      }
-    })
+      },
+    });
 
-    const text = steps[0].content[0].type === "text" ? steps[0].content[0].text : "";
-
+    const firstContent = steps?.[0]?.content?.[0];
+    const text = firstContent?.type === "text" ? firstContent.text : "";
     await publish(
-      anthropicChannel().status({
+      openaiChannel().status({
         nodeId,
-        status: "success"
-      })
-    )
+        status: "success",
+      }),
+    );
 
     return {
       ...context,
       [data.variableName]: {
-        text,
+        aiResponse: text,
       },
-    }
-
-  } catch(error) {
+    };
+  } catch (error) {
     await publish(
-      anthropicChannel().status({
+      openaiChannel().status({
         nodeId,
-        status: "error"
-      })
-    )
+        status: "error",
+      }),
+    );
     throw error;
   }
-
 };
