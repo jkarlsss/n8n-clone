@@ -5,6 +5,7 @@ import Handlebars from "handlebars";
 import { NonRetriableError } from "inngest";
 import { openaiChannel } from "../../../../../inngest/channels/openai";
 import { AI_AVAILABLE_MODELS } from "./dialog";
+import prisma from "../../../../../lib/prisma";
 
 Handlebars.registerHelper("json", (context) => {
   const jsonString = JSON.stringify(context, null, 2);
@@ -16,6 +17,7 @@ Handlebars.registerHelper("json", (context) => {
 
 type OpenAiData = {
   variableName?: string;
+  credentialId?: string;
   model?: typeof AI_AVAILABLE_MODELS[number];
   systemPrompt?: string;
   userPrompt?: string;
@@ -46,14 +48,33 @@ export const openaiExecutor: NodeExecutor<OpenAiData> = async ({
       throw new NonRetriableError("User prompt is required.");
     }
 
+    if (!data.credentialId) {
+      throw new NonRetriableError("Credential is required.");
+    }
+
+    if (!data.model) {
+      throw new NonRetriableError("Model is required.");
+    }
+
     const systemPrompt = data.systemPrompt
       ? Handlebars.compile(data.systemPrompt)(context)
       : "You are a helpful assistant that tries to help the user with their request. Always try to be as helpful as possible.";
 
     const userPrompt = Handlebars.compile(data.userPrompt)(context);
 
-    // TODO: fetch user credentials
-    const credentialValue = process.env.OPENAI_API_KEY;
+    const credential = await step.run("get-credential", () => {
+      return prisma.credential.findUnique({
+        where: {
+          id: data.credentialId,
+        },
+      });
+    });
+
+    if (!credential) {
+      throw new NonRetriableError("API key not configured.");
+    }
+
+    const credentialValue = credential?.value;
 
     if (!credentialValue) {
       throw new NonRetriableError("API key not configured.");
