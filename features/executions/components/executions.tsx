@@ -139,10 +139,9 @@ export const ExecutionItem = ({ data }: { data: ExecutionListItem }) => {
     <>
       {data.workflow.name} &bull; Started{" "}
       {formatDistanceToNow(startedAt, { addSuffix: true })}
-      {duration !== null && <>&bull; Took {duration} seconds</>}
+      {duration !== null && <> &bull; Took {duration} seconds</>}
     </>
   );
-
   return (
     <EntityItem
       title={data.status.toLowerCase()}
@@ -169,18 +168,28 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
       )
     : null;
 
-  const output = execution.output as unknown;
-  const hasOutput = output != null;
-  const outputText = hasOutput ? JSON.stringify(output, null, 2) : null;
+  const executionData = execution as {
+    status: ExecutionStatus;
+    startedAt: string;
+    completedAt: string | null;
+    workflow: { id: string; name: string };
+    inngestEventId: string;
+    error: string | null;
+    errorStack: string | null;
+    output: unknown;
+  };
+
+  const hasOutput = executionData.output != null;
+  const outputText = hasOutput ? JSON.stringify(executionData.output, null, 2) : null;
   return (
     <Card className="shadow-none">
       <CardHeader>
         <div className="flex items-center gap-3">
-          {getStatusIcon(execution.status)}
+          {getStatusIcon(executionData.status)}
           <div>
-            <CardTitle>{execution.status.toLowerCase()}</CardTitle>
+            <CardTitle>{executionData.status.toLowerCase()}</CardTitle>
             <CardDescription>
-              Execution for {execution.workflow.name} &bull; Started{" "}
+              Execution for {executionData.workflow.name} &bull; Started{" "}
             </CardDescription>
           </div>
         </div>
@@ -194,35 +203,35 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
             <Link
               prefetch
               className="text-sm hover:underline text-primary"
-              href={`/workflows/${execution.workflow.id}`}
+              href={`/workflows/${executionData.workflow.id}`}
             >
-              {execution.workflow.name}
+              {executionData.workflow.name}
             </Link>
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Status</p>
-            <p className="text-sm">{execution.status.toLowerCase()} </p>
+            <p className="text-sm">{executionData.status.toLowerCase()} </p>
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Started</p>
             <p className="text-sm">
-              {formatDistanceToNow(new Date(execution.startedAt), {
+              {formatDistanceToNow(new Date(executionData.startedAt), {
                 addSuffix: true,
               })}
             </p>
           </div>
-          {execution.completedAt && (
+          {executionData.completedAt && (
             <div>
               <p className="text-sm font-medium text-muted-foreground">
                 Completed
               </p>
               <p className="text-sm">
-                {formatDistanceToNow(new Date(execution.startedAt), {
+                {formatDistanceToNow(new Date(executionData.completedAt), {
                   addSuffix: true,
                 })}
               </p>
             </div>
-          )}
+          )}{" "}
           {duration && (
             <div>
               <p className="text-sm font-medium text-muted-foreground">
@@ -235,20 +244,20 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
             <p className="text-sm font-medium text-muted-foreground">
               Ingest ID
             </p>
-            <p className="text-sm">{execution.inngestEventId}</p>
+            <p className="text-sm">{executionData.inngestEventId}</p>
           </div>
         </div>
 
-        {execution.error && (
+        {executionData.error && (
           <div className="mt-6 space-y-3 rounded-md bg-red-50 p-4 min-w-0">
             <div className="min-w-0">
               <p className="mb-2 text-sm font-medium text-red-900">Error</p>
               <p className="whitespace-pre-wrap break-all text-sm font-mono text-red-800">
-                {execution.error}
+                {executionData.error}
               </p>
             </div>
 
-            {execution.errorStack && (
+            {executionData.errorStack && (
               <Collapsible
                 open={showStackTrace}
                 onOpenChange={setShowStackTrace}
@@ -264,7 +273,7 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <pre className="mt-2 overflow-auto rounded bg-red-100 p-2 text-xs font-mono text-red-800 whitespace-pre-wrap break-all">
-                    {execution.errorStack}
+                    {executionData.errorStack}
                   </pre>
                 </CollapsibleContent>
               </Collapsible>
@@ -274,9 +283,7 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
         {hasOutput && (
           <div className="mt-6 p-4 bg-muted rounded-md min-w-0">
             <p className="text-sm font-medium mb-2">Output</p>
-            <pre className="text-sm font-mono overflow-auto">
-              {outputText}
-            </pre>
+            <pre className="text-sm font-mono overflow-auto">{outputText}</pre>
           </div>
         )}
       </CardContent>

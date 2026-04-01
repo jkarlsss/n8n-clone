@@ -1,10 +1,11 @@
 import { NonRetriableError } from "inngest";
 import { getExecutor } from "../features/executions/lib/executor-registry";
+import { ExecutionStatus } from "../lib/generated/prisma/enums";
 import prisma from "../lib/prisma";
 import { anthropicChannel } from "./channels/anthropic";
 import { discordChannel } from "./channels/discord";
 import { geminiChannel } from "./channels/gemini";
-import { googleFormTriggerChannel } from "./channels/google-form-trigger copy";
+import { googleFormTriggerChannel } from "./channels/google-form-trigger";
 import { httpRequestChannel } from "./channels/http-request";
 import { manualTriggerChannel } from "./channels/manual-trigger";
 import { openaiChannel } from "./channels/openai";
@@ -12,7 +13,6 @@ import { slackChannel } from "./channels/slack";
 import { stripeTriggerChannel } from "./channels/stripe-trigger";
 import { inngest } from "./client";
 import { topologicalSort } from "./utils";
-import { ExecutionStatus } from "../lib/generated/prisma/enums";
 
 export const executeWorkflow = inngest.createFunction(
   {
@@ -27,12 +27,12 @@ export const executeWorkflow = inngest.createFunction(
           data: {
             status: ExecutionStatus.FAILED,
             error: event.data.error.message,
-            errorStack: event.data.error.stack
+            errorStack: event.data.error.stack,
           },
         });
       });
     },
-    },
+  },
   {
     event: "workflow/execute.workflow",
     channels: [
@@ -115,7 +115,7 @@ export const executeWorkflow = inngest.createFunction(
       await prisma.execution.update({
         where: {
           inngestEventId,
-          workflowId
+          workflowId,
         },
         data: {
           status: ExecutionStatus.SUCCESS,
