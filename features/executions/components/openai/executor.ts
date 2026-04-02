@@ -6,6 +6,7 @@ import { NonRetriableError } from "inngest";
 import { openaiChannel } from "../../../../inngest/channels/openai";
 import prisma from "../../../../lib/prisma";
 import { AI_AVAILABLE_MODELS } from "./dialog";
+import { decrypt } from "../../../../lib/encryption";
 
 Handlebars.registerHelper("json", (context) => {
   const jsonString = JSON.stringify(context, null, 2);
@@ -84,7 +85,7 @@ export const openaiExecutor: NodeExecutor<OpenAiData> = async ({
 
     const openai = createOpenAI({
       // custom settings
-      apiKey: credentialValue,
+      apiKey: decrypt(credentialValue),
     });
 
     const { steps } = await step.ai.wrap("openai-generate-text", generateText, {

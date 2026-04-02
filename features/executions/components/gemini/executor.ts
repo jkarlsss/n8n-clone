@@ -1,3 +1,4 @@
+import { decrypt } from './../../../../lib/encryption';
 import { NodeExecutor } from "@/features/executions/types";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
@@ -76,7 +77,7 @@ export const geminiExecutor: NodeExecutor<GeminiData> = async ({
       throw new NonRetriableError("API key not configured.");
     }
 
-    const credentialValue = credential?.value;
+    const credentialValue = decrypt(credential.value);
 
     if (!credentialValue) {
       throw new NonRetriableError("API key not configured.");

@@ -283,7 +283,7 @@ export const ExecutionView = ({ executionId }: { executionId: string }) => {
         {hasOutput && (
           <div className="mt-6 p-4 bg-muted rounded-md min-w-0">
             <p className="text-sm font-medium mb-2">Output</p>
-            <pre className="text-sm font-mono overflow-auto">{outputText}</pre>
+            <pre className="min-w-0 whitespace-pre-wrap break-all text-sm font-mono overflow-auto">{outputText}</pre>
           </div>
         )}
       </CardContent>
