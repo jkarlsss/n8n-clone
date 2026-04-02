@@ -7,6 +7,7 @@ import {
   protectedProcedure,
 } from "@/trpc/init";
 import z from "zod";
+import { encrypt } from "../../../lib/encryption";
 
 export const credentialsRouter = createTRPCRouter({
   create: premiumProcedure
@@ -25,7 +26,7 @@ export const credentialsRouter = createTRPCRouter({
           name,
           userId: ctx.auth.user.id,
           type,
-          value, // In a real application, you should encrypt this value before storing it in the database
+          value: encrypt(value), // In a real application, you should encrypt this value before storing it in the database
         },
       });
     }),
@@ -58,7 +59,7 @@ export const credentialsRouter = createTRPCRouter({
         data: {
           name,
           type,
-          value, // In a real application, you should encrypt this value before storing it in the database
+          value: encrypt(value), // In a real application, you should encrypt this value before storing it in the database
         },
       });
     }),
