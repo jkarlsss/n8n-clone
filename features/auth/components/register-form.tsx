@@ -52,6 +52,21 @@ export function RegisterForm() {
     },
   });
 
+  
+  const signInGithub = async () => {
+      await authClient.signIn.social({
+          provider: "github"
+      }
+    )
+  }
+  
+  const signInGoogle = async () => {
+      await authClient.signIn.social({
+          provider: "google"
+      }
+    )
+  }
+
   const onsubmit = async (values: RegisterFormValues) => {
     await authClient.signUp.email(
       {
@@ -91,6 +106,8 @@ export function RegisterForm() {
                   className="w-full"
                   type="button"
                   disabled={isPending}
+                  onClick={signInGithub}
+
                 >
                   <Image
                     src="/logos/github.svg"
@@ -105,6 +122,8 @@ export function RegisterForm() {
                   className="w-full"
                   type="button"
                   disabled={isPending}
+                  onClick={signInGoogle}
+
                 >
                   <Image
                     src="/logos/google.svg"
