@@ -43,6 +43,21 @@ export function LoginForm() {
     },
   });
 
+  
+const signInGithub = async () => {
+    await authClient.signIn.social({
+        provider: "github"
+    }
+  )
+}
+
+const signInGoogle = async () => {
+    await authClient.signIn.social({
+        provider: "google"
+    }
+  )
+}
+
   const onsubmit = async (values: LoginFormValues) => {
     await authClient.signIn.email(
       {
@@ -81,6 +96,7 @@ export function LoginForm() {
                   className="w-full"
                   type="button"
                   disabled={isPending}
+                  onClick={signInGithub}
                 >
                   <Image
                     src="/logos/github.svg"
@@ -95,6 +111,7 @@ export function LoginForm() {
                   className="w-full"
                   type="button"
                   disabled={isPending}
+                  onClick={signInGoogle}
                 >
                   <Image
                     src="/logos/google.svg"
