@@ -9,6 +9,7 @@ import { NodeExecutor } from "../types";
 import { geminiExecutor } from "../components/gemini/executor";
 import { discordExecutor } from "../components/discord/executor";
 import { slackExecutor } from "../components/slack/executor";
+import { messengerTriggerExecutor } from "../../triggers/components/messenger-trigger/executor";
 
 export const executorRegistry: Record<NodeType, NodeExecutor> = {
   [NodeType.INITIAL]: manualTriggerExecutor,
@@ -21,6 +22,7 @@ export const executorRegistry: Record<NodeType, NodeExecutor> = {
   [NodeType.OPENAI]: openaiExecutor,
   [NodeType.DISCORD]: discordExecutor,
   [NodeType.SLACK]: slackExecutor,
+  [NodeType.MESSENGER_TRIGGER]: messengerTriggerExecutor,
 };
 
 export const getExecutor = (type: NodeType): NodeExecutor => {

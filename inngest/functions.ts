@@ -13,6 +13,7 @@ import { slackChannel } from "./channels/slack";
 import { stripeTriggerChannel } from "./channels/stripe-trigger";
 import { inngest } from "./client";
 import { topologicalSort } from "./utils";
+import { messengerTriggerChannel } from "./channels/messenger-trigger";
 
 export const executeWorkflow = inngest.createFunction(
   {
@@ -45,6 +46,7 @@ export const executeWorkflow = inngest.createFunction(
       openaiChannel(),
       slackChannel(),
       discordChannel(),
+      messengerTriggerChannel(),
     ],
   },
   async ({ event, step, publish }) => {

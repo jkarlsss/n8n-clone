@@ -57,30 +57,39 @@ export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({
     const options: KyOptions = {
       method,
     };
-
-    if(["POST", "PUT", "PATCH"].includes(method)) {
+    
+    if (["POST", "PUT", "PATCH"].includes(method)) {
       const resolved = Handlebars.compile(data.body || "{}")(context);
       JSON.parse(resolved);
       options.body = resolved;
       options.headers = { "Content-Type": "application/json" };
     }
 
-    const response = await ky(endPoint, options);
+    const response = await ky(endPoint, {
+      ...options,
+      throwHttpErrors: false,
+    });
+
     const contentType = response.headers.get("content-type");
-    const responseData = contentType?.includes("application/json") ? await response.json() : await response.text();
-  
+    const responseData = contentType?.includes("application/json")
+      ? await response.json()
+      : await response.text();
+
     const responsePayload = {
       httpResponse: {
         status: response.status,
         statusText: response.statusText,
-        data: responseData
-      }
-    }
+        data: responseData,
+      },
+    };
 
+    if (!response.ok) {
+      console.log("HTTP ERROR RESPONSE:", responsePayload);
+    }
 
     return {
       ...context,
-      [data.variableName]: responsePayload
+      [data.variableName]: responsePayload,
     };
   });
 
