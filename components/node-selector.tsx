@@ -46,6 +46,12 @@ const triggerNodes: NodeTypeOption[] = [
     description: "Runs the workflow when a Stripe event is triggered.",
     icon: "/logos/stripe.svg",
   },
+  {
+    type: NodeType.MESSENGER_TRIGGER,
+    label: "Messenger Trigger",
+    description: "Runs the workflow when a Messenger event is triggered.",
+    icon: "/logos/messenger.svg",
+  }
 ];
 
 const executionNodes: NodeTypeOption[] = [

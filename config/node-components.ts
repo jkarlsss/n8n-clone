@@ -10,6 +10,7 @@ import { StripeTriggerNode } from "../features/triggers/components/stripe-trigge
 import { NodeType } from "../lib/generated/prisma/enums";
 import { DiscordNode } from "../features/executions/components/discord/node";
 import { SlackNode } from "../features/executions/components/slack/node";
+import { MessengerTriggerNode } from "../features/triggers/components/messenger-trigger/node";
 
 export const nodeComponents = {
   [NodeType.INITIAL]: InitialNode,
@@ -21,7 +22,8 @@ export const nodeComponents = {
   [NodeType.ANTHROPIC]: AnthropicNode,
   [NodeType.OPENAI]: OpenAiNode,
   [NodeType.DISCORD]: DiscordNode,
-  [NodeType.SLACK]: SlackNode
+  [NodeType.SLACK]: SlackNode,
+  [NodeType.MESSENGER_TRIGGER]: MessengerTriggerNode,
 } as const satisfies NodeTypes
 
 export type RegisteredNodeType = keyof typeof nodeComponents;
